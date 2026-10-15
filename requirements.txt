@@ -1,0 +1,8 @@
+fastapi
+uvicorn[standard]
+streamlit
+pandas
+plotly
+requests
+python-dotenv
+vaderSentiment
