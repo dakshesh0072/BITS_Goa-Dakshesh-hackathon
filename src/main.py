@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+
+from src.ingestion.loader import load_text_items
 from src.models import RiskSignal, TextItem
 from src.pipeline import analyze_text
 
@@ -16,3 +18,9 @@ def health_check():
 @app.post("/analyze", response_model=RiskSignal)
 def analyze(item: TextItem):
     return analyze_text(item)
+
+
+@app.post("/analyze/batch", response_model=list[RiskSignal])
+def analyze_batch():
+    items = load_text_items()
+    return [analyze_text(item) for item in items]
