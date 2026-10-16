@@ -30,13 +30,23 @@ except requests.RequestException:
     st.stop()
 
 
-if st.button("Run Risk Analysis and Rebalance Index", type="primary"):
-    with st.spinner("Processing news and social-media data..."):
-        signals = call_api("/analyze/batch")
-        rebalance_result = call_api("/rebalance")
+run_column, reset_column = st.columns(2)
 
-    st.session_state["signals"] = signals
-    st.session_state["rebalance_result"] = rebalance_result
+with run_column:
+    if st.button("Run Risk Analysis and Rebalance Index", type="primary"):
+        with st.spinner("Processing news and social-media data..."):
+            signals = call_api("/analyze/batch")
+            rebalance_result = call_api("/rebalance")
+
+        st.session_state["signals"] = signals
+        st.session_state["rebalance_result"] = rebalance_result
+
+with reset_column:
+    if st.button("Reset Portfolio to 10%"):
+        call_api("/reset")
+        st.session_state.pop("signals", None)
+        st.session_state.pop("rebalance_result", None)
+        st.rerun()
 
 
 if "signals" in st.session_state:
@@ -71,16 +81,16 @@ if "signals" in st.session_state:
         hide_index=True,
     )
 
-    st.subheader("Mock Index: Original vs Rebalanced Weights")
+    st.subheader("Mock Index: Previous vs Rebalanced Weights")
 
     weights_chart = px.bar(
         stocks_df,
         x="ticker",
-        y=["base_weight", "new_weight"],
+        y=["previous_weight", "new_weight"],
         barmode="group",
         labels={"value": "Weight (%)", "ticker": "Stock"},
         color_discrete_map={
-            "base_weight": "#94a3b8",
+            "previous_weight": "#94a3b8",
             "new_weight": "#2563eb",
         },
     )
@@ -88,39 +98,48 @@ if "signals" in st.session_state:
 
     st.subheader("Stock Sentiment Used for Rebalancing")
     st.dataframe(
-        stocks_df[["ticker", "sentiment_score", "base_weight", "new_weight"]],
+        stocks_df[
+            [
+                "ticker",
+                "initial_weight",
+                "previous_weight",
+                "sentiment_score",
+                "new_weight",
+            ]
+        ],
         use_container_width=True,
         hide_index=True,
     )
 
-    history_response = requests.get(f"{API_URL}/history", timeout=10).json()
-    history_rows = []
 
-    for snapshot in history_response:
-        for stock in snapshot["stocks"]:
-            history_rows.append(
-                {
-                    "rebalanced_at": snapshot["rebalanced_at"],
-                    "ticker": stock["ticker"],
-                    "weight": stock["new_weight"],
-                }
-            )
+history_response = requests.get(f"{API_URL}/history", timeout=10).json()
+history_rows = []
 
-    if history_rows:
-        history_df = pd.DataFrame(history_rows)
-        history_df["rebalanced_at"] = pd.to_datetime(history_df["rebalanced_at"])
-
-        st.subheader("Index Weight History")
-        history_chart = px.line(
-            history_df,
-            x="rebalanced_at",
-            y="weight",
-            color="ticker",
-            markers=True,
-            labels={
-                "rebalanced_at": "Rebalance Time",
-                "weight": "Weight (%)",
-                "ticker": "Stock",
-            },
+for snapshot in history_response:
+    for stock in snapshot["stocks"]:
+        history_rows.append(
+            {
+                "rebalanced_at": snapshot["rebalanced_at"],
+                "ticker": stock["ticker"],
+                "weight": stock["new_weight"],
+            }
         )
-        st.plotly_chart(history_chart, use_container_width=True)
+
+if history_rows:
+    history_df = pd.DataFrame(history_rows)
+    history_df["rebalanced_at"] = pd.to_datetime(history_df["rebalanced_at"])
+
+    st.subheader("Index Weight History")
+    history_chart = px.line(
+        history_df,
+        x="rebalanced_at",
+        y="weight",
+        color="ticker",
+        markers=True,
+        labels={
+            "rebalanced_at": "Rebalance Time",
+            "weight": "Weight (%)",
+            "ticker": "Stock",
+        },
+    )
+    st.plotly_chart(history_chart, use_container_width=True)
