@@ -1,0 +1,67 @@
+[
+  {
+    "rebalanced_at": "2026-10-16T13:02:14.817214+00:00",
+    "stocks": [
+      {
+        "ticker": "NVDA",
+        "base_weight": 10.0,
+        "sentiment_score": 1.0,
+        "new_weight": 10.84
+      },
+      {
+        "ticker": "TSLA",
+        "base_weight": 10.0,
+        "sentiment_score": 0.0,
+        "new_weight": 9.85
+      },
+      {
+        "ticker": "AAPL",
+        "base_weight": 10.0,
+        "sentiment_score": 1.0,
+        "new_weight": 10.84
+      },
+      {
+        "ticker": "JPM",
+        "base_weight": 10.0,
+        "sentiment_score": -0.5,
+        "new_weight": 9.36
+      },
+      {
+        "ticker": "XOM",
+        "base_weight": 10.0,
+        "sentiment_score": 0.0,
+        "new_weight": 9.85
+      },
+      {
+        "ticker": "MSFT",
+        "base_weight": 10.0,
+        "sentiment_score": 0.0,
+        "new_weight": 9.85
+      },
+      {
+        "ticker": "AMZN",
+        "base_weight": 10.0,
+        "sentiment_score": 0.0,
+        "new_weight": 9.85
+      },
+      {
+        "ticker": "GOOGL",
+        "base_weight": 10.0,
+        "sentiment_score": 0.0,
+        "new_weight": 9.85
+      },
+      {
+        "ticker": "META",
+        "base_weight": 10.0,
+        "sentiment_score": 0.0,
+        "new_weight": 9.85
+      },
+      {
+        "ticker": "WMT",
+        "base_weight": 10.0,
+        "sentiment_score": 0.0,
+        "new_weight": 9.85
+      }
+    ]
+  }
+]
