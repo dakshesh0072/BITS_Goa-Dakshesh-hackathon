@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import json
 
@@ -69,6 +69,43 @@ def save_rebalance_history(result: dict) -> None:
         history = json.loads(HISTORY_FILE.read_text())
     else:
         history = []
+
+    needs_initial_snapshot = (
+        not history or history[0].get("snapshot_type") != "initial"
+    )
+
+    if needs_initial_snapshot:
+        if history:
+            first_timestamp = datetime.fromisoformat(
+                history[0]["rebalanced_at"].replace("Z", "+00:00")
+            )
+        else:
+            first_timestamp = datetime.fromisoformat(
+                result["rebalanced_at"].replace("Z", "+00:00")
+            )
+
+        initial_stocks = []
+
+        for stock in result["stocks"]:
+            initial_stocks.append(
+                {
+                    "ticker": stock["ticker"],
+                    "base_weight": stock["base_weight"],
+                    "sentiment_score": 0.0,
+                    "new_weight": stock["base_weight"],
+                }
+            )
+
+        history.insert(
+            0,
+            {
+                "snapshot_type": "initial",
+                "rebalanced_at": (
+                    first_timestamp - timedelta(seconds=1)
+                ).isoformat(),
+                "stocks": initial_stocks,
+            },
+        )
 
     history.append(result)
     HISTORY_FILE.write_text(json.dumps(history, indent=2))
