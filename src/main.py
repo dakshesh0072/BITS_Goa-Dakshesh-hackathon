@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from src.ingestion.loader import load_text_items
 from src.models import RiskSignal, TextItem
 from src.pipeline import analyze_text
-from src.rebalancer import rebalance_index
+from src.rebalancer import load_rebalance_history, rebalance_index
 
 app = FastAPI(
     title="AI/NLP Financial Risk Engine",
@@ -32,3 +32,8 @@ def rebalance():
     items = load_text_items()
     signals = [analyze_text(item) for item in items]
     return rebalance_index(signals)
+
+
+@app.get("/history")
+def history():
+    return load_rebalance_history()

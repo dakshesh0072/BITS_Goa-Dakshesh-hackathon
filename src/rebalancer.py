@@ -72,3 +72,10 @@ def save_rebalance_history(result: dict) -> None:
 
     history.append(result)
     HISTORY_FILE.write_text(json.dumps(history, indent=2))
+
+
+def load_rebalance_history() -> list[dict]:
+    if not HISTORY_FILE.exists():
+        return []
+
+    return json.loads(HISTORY_FILE.read_text())
