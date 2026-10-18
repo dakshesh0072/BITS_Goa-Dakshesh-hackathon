@@ -19,6 +19,7 @@ class TextItem(BaseModel):
     source: str = Field(examples=["news", "social"])
     text: str
     company: str | None = None
+    item_id: str | None = None
 
 
 class RiskSignal(BaseModel):

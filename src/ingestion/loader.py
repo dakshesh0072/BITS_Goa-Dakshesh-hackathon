@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.ingestion.news import fetch_live_news
+from src.ingestion.news import fetch_live_news, filter_unseen_news
 from src.models import TextItem
 
 
@@ -24,11 +24,7 @@ def load_csv_items(file_name: str) -> list[TextItem]:
 
 
 def load_text_items() -> list[TextItem]:
-    live_news = fetch_live_news()
+    live_news = filter_unseen_news(fetch_live_news())
     social_posts = load_csv_items("social_posts.csv")
-
-    # Keep the static news file as a reliable demo fallback.
-    if not live_news:
-        live_news = load_csv_items("news.csv")
 
     return live_news + social_posts
