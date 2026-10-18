@@ -6,3 +6,6 @@ plotly
 requests
 python-dotenv
 vaderSentiment
+transformers
+torch
+accelerate

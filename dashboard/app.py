@@ -71,6 +71,8 @@ if "signals" in st.session_state:
             [
                 "source",
                 "company",
+                "sentiment_label",
+                "sentiment_confidence",
                 "sentiment_score",
                 "event_classification",
                 "impact_score",

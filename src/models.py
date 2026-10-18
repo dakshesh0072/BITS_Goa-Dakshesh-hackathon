@@ -26,6 +26,9 @@ class RiskSignal(BaseModel):
     text: str
     company: str | None
     sentiment_score: float
+    sentiment_label: str
+    sentiment_confidence: float
+    sentiment_probabilities: dict[str, float]
     event_classification: EventType
     impact_score: int
     processed_at: datetime

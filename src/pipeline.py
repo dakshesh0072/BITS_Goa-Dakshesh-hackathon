@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from src.models import EventType, RiskSignal, TextItem
-
+from src.nlp.finbert_sentiment import analyze_financial_sentiment
 
 EVENT_KEYWORDS = {
     EventType.GEOPOLITICAL: ["war", "sanction", "tariff", "conflict"],
@@ -12,8 +12,6 @@ EVENT_KEYWORDS = {
     EventType.REGULATORY: ["regulator", "antitrust", "fine", "ban"],
 }
 
-POSITIVE_WORDS = ["beat", "growth", "surge", "profit", "strong", "record", "approval"]
-NEGATIVE_WORDS = ["fall", "drop", "loss", "weak", "miss", "risk", "lawsuit", "default"]
 
 
 def classify_event(text: str) -> EventType:
@@ -26,16 +24,6 @@ def classify_event(text: str) -> EventType:
     return EventType.OTHER
 
 
-def calculate_sentiment(text: str) -> float:
-    text_lower = text.lower()
-    positive_count = sum(word in text_lower for word in POSITIVE_WORDS)
-    negative_count = sum(word in text_lower for word in NEGATIVE_WORDS)
-    total = positive_count + negative_count
-
-    if total == 0:
-        return 0.0
-
-    return round((positive_count - negative_count) / total, 2)
 
 
 def calculate_impact(sentiment: float, event_type: EventType) -> int:
@@ -52,15 +40,22 @@ def calculate_impact(sentiment: float, event_type: EventType) -> int:
 
 
 def analyze_text(item: TextItem) -> RiskSignal:
+    sentiment_result = analyze_financial_sentiment(item.text)
     event_type = classify_event(item.text)
-    sentiment = calculate_sentiment(item.text)
-    impact = calculate_impact(sentiment, event_type)
+
+    impact = calculate_impact(
+        sentiment_result["score"],
+        event_type,
+    )
 
     return RiskSignal(
         source=item.source,
         text=item.text,
         company=item.company,
-        sentiment_score=sentiment,
+        sentiment_score=sentiment_result["score"],
+        sentiment_label=sentiment_result["label"],
+        sentiment_confidence=sentiment_result["confidence"],
+        sentiment_probabilities=sentiment_result["probabilities"],
         event_classification=event_type,
         impact_score=impact,
         processed_at=datetime.now(timezone.utc),

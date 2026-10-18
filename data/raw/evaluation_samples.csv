@@ -1,0 +1,11 @@
+text,company,expected_sentiment,expected_event
+Nvidia reports record revenue and raises annual guidance.,NVDA,positive,Earnings
+Tesla missed delivery estimates despite reporting higher revenue.,TSLA,negative,Earnings
+Apple avoided a loss but lowered its sales outlook.,AAPL,negative,Earnings
+The central bank signalled higher borrowing costs for longer.,JPM,negative,Macroeconomic
+Apple launches a new device with no change to its sales forecast.,AAPL,neutral,Product Launch
+Microsoft wins a major government cloud contract.,MSFT,positive,Other
+Amazon faces a regulatory investigation over marketplace practices.,AMZN,negative,Regulatory
+Exxon Mobil reports stable earnings with limited change in outlook.,XOM,neutral,Earnings
+Meta shares rise after advertising revenue exceeds expectations.,META,positive,Earnings
+Walmart warns that consumer demand may weaken next quarter.,WMT,negative,Earnings
