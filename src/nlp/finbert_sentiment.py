@@ -16,11 +16,7 @@ def get_finbert_classifier():
     )
 
 
-def analyze_financial_sentiment(text: str) -> dict:
-    classifier = get_finbert_classifier()
-    predictions = classifier(text, top_k=None, truncation=True, max_length=512)
-
-    # Some Transformers versions return a nested list for all-label output.
+def format_sentiment_prediction(predictions: list[dict]) -> dict:
     if predictions and isinstance(predictions[0], list):
         predictions = predictions[0]
 
@@ -35,12 +31,8 @@ def analyze_financial_sentiment(text: str) -> dict:
 
     predicted_label = max(probabilities, key=probabilities.get)
     confidence = probabilities[predicted_label]
-    sentiment_score = round(
-        positive_probability - negative_probability,
-        4,
-    )
+    sentiment_score = round(positive_probability - negative_probability, 4)
 
-    # Do not rebalance strongly on uncertain model output.
     if confidence < MINIMUM_CONFIDENCE:
         predicted_label = "neutral"
         sentiment_score = 0.0
@@ -55,3 +47,20 @@ def analyze_financial_sentiment(text: str) -> dict:
         },
         "score": sentiment_score,
     }
+
+
+def analyze_financial_sentiments(texts: list[str]) -> list[dict]:
+    classifier = get_finbert_classifier()
+    prediction_batches = classifier(
+        texts,
+        top_k=None,
+        truncation=True,
+        max_length=512,
+        batch_size=8,
+    )
+
+    return [format_sentiment_prediction(predictions) for predictions in prediction_batches]
+
+
+def analyze_financial_sentiment(text: str) -> dict:
+    return analyze_financial_sentiments([text])[0]

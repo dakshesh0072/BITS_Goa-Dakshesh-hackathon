@@ -16,8 +16,8 @@ st.title("AI/NLP Financial Risk Engine")
 st.caption("Real-time text analysis and sentiment-driven index rebalancing")
 
 
-def call_api(endpoint: str):
-    response = requests.post(f"{API_URL}{endpoint}", timeout=20)
+def call_api(endpoint: str, timeout: int = 180):
+    response = requests.post(f"{API_URL}{endpoint}", timeout=timeout)
     response.raise_for_status()
     return response.json()
 
@@ -34,12 +34,19 @@ run_column, reset_column = st.columns(2)
 
 with run_column:
     if st.button("Run Risk Analysis and Rebalance Index", type="primary"):
-        with st.spinner("Processing news and social-media data..."):
-            signals = call_api("/analyze/batch")
-            rebalance_result = call_api("/rebalance")
+        try:
+            with st.spinner(
+                "Loading AI models and analyzing news and social-media data..."
+            ):
+                run_result = call_api("/run")
 
-        st.session_state["signals"] = signals
-        st.session_state["rebalance_result"] = rebalance_result
+            st.session_state["signals"] = run_result["signals"]
+            st.session_state["rebalance_result"] = run_result["rebalance_result"]
+        except requests.RequestException:
+            st.error(
+                "The analysis took too long or the API stopped. Check the API terminal "
+                "for model-download or model-loading progress, then try again."
+            )
 
 with reset_column:
     if st.button("Reset Portfolio to 10%"):
@@ -75,6 +82,7 @@ if "signals" in st.session_state:
                 "sentiment_confidence",
                 "sentiment_score",
                 "event_classification",
+                "event_confidence",
                 "impact_score",
                 "text",
             ]
