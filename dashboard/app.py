@@ -29,7 +29,6 @@ except requests.RequestException:
     st.error("API is not running. Start it with: uvicorn src.main:app --reload")
     st.stop()
 
-
 run_column, reset_column = st.columns(2)
 
 with run_column:

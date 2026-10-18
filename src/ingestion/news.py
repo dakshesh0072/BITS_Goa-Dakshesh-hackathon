@@ -1,11 +1,17 @@
+import os
 import time
+from pathlib import Path
 
 import requests
+from dotenv import load_dotenv
 
 from src.models import TextItem
 
 
-GDELT_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+load_dotenv(PROJECT_ROOT / ".env")
+
+NEWS_API_URL = "https://newsapi.org/v2/everything"
 CACHE_TTL_SECONDS = 60
 
 _cached_news: list[TextItem] = []
@@ -41,46 +47,65 @@ def fetch_live_news(max_records: int = 5) -> list[TextItem]:
     if _cached_news and time.monotonic() < _cache_expires_at:
         return list(_cached_news)
 
-    company_query = (
-        "Nvidia OR Tesla OR Apple OR JPMorgan OR Exxon "
-        "OR Microsoft OR Amazon OR Alphabet OR Meta OR Walmart"
+    api_key = os.getenv("NEWS_API_KEY")
+    if not api_key:
+        return list(_cached_news)
+
+    company_query = " OR ".join(
+        [
+            "Nvidia",
+            "Tesla",
+            "Apple",
+            "JPMorgan",
+            "Exxon",
+            "Microsoft",
+            "Amazon",
+            "Alphabet",
+            "Meta",
+            "Walmart",
+        ]
     )
 
     parameters = {
-        "query": f"({company_query})",
-        "mode": "artlist",
-        "format": "json",
-        "maxrecords": max_records,
-        "timespan": "24h",
-        "sort": "datedesc",
+        "q": f"({company_query})",
+        "searchIn": "title,description",
+        "language": "en",
+        "sortBy": "publishedAt",
+        "pageSize": max_records,
+        "apiKey": api_key,
     }
 
     try:
         response = requests.get(
-            GDELT_URL,
+            NEWS_API_URL,
             params=parameters,
             timeout=15,
         )
         response.raise_for_status()
 
         articles = response.json().get("articles", [])
-    except (requests.RequestException, ValueError):
-        # Keep the most recently fetched live data available if GDELT is busy.
+    except requests.RequestException:
+        # Keep the most recently fetched live data available if NewsAPI is busy.
+        return list(_cached_news)
+    except ValueError:
         return list(_cached_news)
 
     news_items = []
 
     for article in articles:
         title = article.get("title", "").strip()
+        description = (article.get("description") or "").strip()
 
         if not title:
             continue
 
+        text = f"{title}. {description}" if description else title
+
         news_items.append(
             TextItem(
-                source="gdelt_news",
-                company=identify_company(title),
-                text=title,
+                source="newsapi",
+                company=identify_company(text),
+                text=text,
             )
         )
 
