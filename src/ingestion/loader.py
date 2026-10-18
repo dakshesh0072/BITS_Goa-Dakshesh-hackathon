@@ -1,26 +1,34 @@
 from pathlib import Path
+
 import pandas as pd
 
+from src.ingestion.news import fetch_live_news
 from src.models import TextItem
 
 
 DATA_DIRECTORY = Path(__file__).resolve().parents[2] / "data" / "raw"
 
 
+def load_csv_items(file_name: str) -> list[TextItem]:
+    file_path = DATA_DIRECTORY / file_name
+    data = pd.read_csv(file_path)
+
+    return [
+        TextItem(
+            source=str(row["source"]),
+            company=str(row["company"]),
+            text=str(row["text"]),
+        )
+        for _, row in data.iterrows()
+    ]
+
+
 def load_text_items() -> list[TextItem]:
-    items = []
+    live_news = fetch_live_news()
+    social_posts = load_csv_items("social_posts.csv")
 
-    for file_name in ["news.csv", "social_posts.csv"]:
-        file_path = DATA_DIRECTORY / file_name
-        data = pd.read_csv(file_path)
+    # Keep the static news file as a reliable demo fallback.
+    if not live_news:
+        live_news = load_csv_items("news.csv")
 
-        for _, row in data.iterrows():
-            items.append(
-                TextItem(
-                    source=str(row["source"]),
-                    company=str(row["company"]),
-                    text=str(row["text"]),
-                )
-            )
-
-    return items
+    return live_news + social_posts
