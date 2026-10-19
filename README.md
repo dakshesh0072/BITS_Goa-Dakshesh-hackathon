@@ -3,8 +3,8 @@
 **Candidate Name:** Dakshesh  
 **College Email ID:** f20230727@goa.bits-pilani.ac.in  
 **College / Campus:** BITS Pilani Goa Campus  
-**Demo Video Link:**   
-**Slide Deck Link:** 
+**Demo Video Link:** https://youtu.be/MbO2Y4x6HMs
+**Slide Deck Link:** in the docs folder of this repo
 
 ## 1. Project Overview / Problem Statement & Approach
 
